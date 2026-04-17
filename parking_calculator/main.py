@@ -57,6 +57,7 @@ def main():
     data = Path("input.txt").read_text(encoding="utf-8")
     lines = data.strip().splitlines()
 
+    results = []
     for line in lines[2:]:
         parts = [p.strip() for p in line.split('\t') if p.strip()]
         if len(parts) < 3:
@@ -68,15 +69,23 @@ def main():
             entry = datetime.strptime(parts[1], "%Y-%m-%d %H:%M:%S")
             exit_time = datetime.strptime(parts[2], "%Y-%m-%d %H:%M:%S")
         except ValueError:
-            print(f"{plate}\tHibás dátumformátum")
+            results.append(f"{plate}\tHibás dátumformátum")
             continue
 
         total_minutes = math.ceil((exit_time - entry).total_seconds() / 60)
 
+        if total_minutes < 0:
+            results.append(f"{plate}\tHibás: kilépés korábbi, mint belépés")
+            continue
+
         hourly = calc_fee_per_hour(total_minutes)
         per_min = calc_fee_per_minute(total_minutes)
 
-        print(f"{plate}\t{total_minutes} perc\t{hourly} Ft\t{per_min} Ft (perces)")
+        results.append(f"{plate}\t{hourly} Ft\t{per_min} Ft")
+
+    output = "\n".join(results)
+    print(output)
+    Path("output.txt").write_text(output, encoding="utf-8")
 
 
 if __name__ == "__main__":
