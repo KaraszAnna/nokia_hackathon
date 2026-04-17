@@ -1,7 +1,10 @@
 from pathlib import Path
-
 import json
 import re
+import sys
+
+ADAPTER_SPLIT = re.compile(r'\n(?=[a-zA-Z])')
+IPV4_CLEANUP = re.compile(r'\(.*?\)')
 
 FIELD_MAP = {
     "description": "description",
@@ -18,13 +21,12 @@ def parse_ipconfig_file(file_path):
     with open(file_path, 'r', encoding='utf-16') as f:
         content = f.read()
 
-    adapter_sections = re.compile(r'\n(?=[a-zA-Z])').split(content)
+    adapter_sections = ADAPTER_SPLIT.split(content)
 
     parsed_adapters = []
 
     for section in adapter_sections:
-        section_lower = section.lower()
-        if "adapter" not in section_lower:
+        if "adapter" not in section.lower():
             continue
 
         lines = section.strip().split('\n')
@@ -41,9 +43,14 @@ def parse_ipconfig_file(file_path):
 
         prev_field = ""
         for line in lines[1:]:
-            if ":" not in line:
-                if prev_field == "dns_servers" and line.strip():
-                    adapter["dns_servers"].append(line.strip())
+            if ". ." not in line:
+                stripped = line.strip()
+                if not stripped:
+                    continue
+                if prev_field == "dns_servers":
+                    adapter["dns_servers"].append(stripped)
+                elif prev_field == "default_gateway":
+                    adapter["default_gateway"] += ", " + stripped
                 continue
 
             raw_key, raw_value = line.split(":", 1)
@@ -65,7 +72,7 @@ def parse_ipconfig_file(file_path):
                 if value:
                     adapter["dns_servers"].append(value)
             elif matched_field == "ipv4_address":
-                adapter["ipv4_address"] = re.sub(r'\(.*?\)', '', value).strip()
+                adapter["ipv4_address"] = IPV4_CLEANUP.sub('', value).strip()
             else:
                 adapter[matched_field] = value
 
@@ -85,7 +92,8 @@ def main():
             "adapters": adapters
         })
 
-    print(json.dumps(all_results, indent=2, ensure_ascii=False))
+    sys.stdout.write(json.dumps(all_results, indent=2, ensure_ascii=False))
+    sys.stdout.write('\n')
 
 if __name__ == "__main__":
     main()
