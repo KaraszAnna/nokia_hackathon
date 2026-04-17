@@ -13,7 +13,9 @@ def min_num_of_drops(devs, max_height):
 
 def main():
     data = Path("input.txt").read_text(encoding="utf-8")
-    print(data, end="")
+    for line in data.strip().splitlines():
+        devs, height = line.split(",")
+        print(min_num_of_drops(int(devs.strip()), int(height.strip())))
 
 
 if __name__ == "__main__":
