@@ -15,7 +15,7 @@ FIELD_MAP = {
 
 
 def parse_ipconfig_file(file_path):
-    with open(file_path, 'r', encoding='cp850') as f:
+    with open(file_path, 'r', encoding='utf-16') as f:
         content = f.read()
 
     adapter_sections = re.compile(r'\n(?=[a-zA-Z])').split(content)
@@ -65,7 +65,7 @@ def parse_ipconfig_file(file_path):
                 if value:
                     adapter["dns_servers"].append(value)
             elif matched_field == "ipv4_address":
-                adapter["ipv4_address"] = value.replace("(Preferred)", "").strip()
+                adapter["ipv4_address"] = re.sub(r'\(.*?\)', '', value).strip()
             else:
                 adapter[matched_field] = value
 
@@ -75,19 +75,17 @@ def parse_ipconfig_file(file_path):
 
 
 def main():
-    input_files = sorted(Path(".").glob("*.txt"))
+    input_files = sorted(Path(".").glob("parser_input*.txt"))
     all_results = []
 
     for file_path in input_files:
-        print(file_path.name)
         adapters = parse_ipconfig_file(str(file_path))
         all_results.append({
             "file_name": file_path.name,
             "adapters": adapters
         })
 
-    with open("results.json", 'w', encoding='utf-8') as output_file:
-        json.dump(all_results, output_file, indent=2, ensure_ascii=False)
+    print(json.dumps(all_results, indent=2, ensure_ascii=False))
 
 if __name__ == "__main__":
     main()
