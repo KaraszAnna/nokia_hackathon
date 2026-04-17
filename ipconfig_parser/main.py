@@ -3,8 +3,6 @@ from pathlib import Path
 import json
 import re
 
-ADAPTER_SPLIT_PATTERN = re.compile(r'\n(?=[a-zA-Z])')
-
 FIELD_MAP = {
     "description": "description",
     "physical address": "physical_address",
@@ -20,7 +18,7 @@ def parse_ipconfig_file(file_path):
     with open(file_path, 'r', encoding='cp850') as f:
         content = f.read()
 
-    adapter_sections = ADAPTER_SPLIT_PATTERN.split(content)
+    adapter_sections = re.compile(r'\n(?=[a-zA-Z])').split(content)
 
     parsed_adapters = []
 
@@ -78,10 +76,18 @@ def parse_ipconfig_file(file_path):
 
 def main():
     input_files = sorted(Path(".").glob("*.txt"))
+    all_results = []
 
     for file_path in input_files:
+        print(file_path.name)
         adapters = parse_ipconfig_file(str(file_path))
-        print(json.dumps({"file_name": file_path.name, "adapters": adapters}, indent=2, ensure_ascii=False))
+        all_results.append({
+            "file_name": file_path.name,
+            "adapters": adapters
+        })
+
+    with open("results.json", 'w', encoding='utf-8') as output_file:
+        json.dump(all_results, output_file, indent=2, ensure_ascii=False)
 
 if __name__ == "__main__":
     main()
