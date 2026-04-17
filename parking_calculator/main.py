@@ -81,7 +81,7 @@ def main():
         hourly = calc_fee_per_hour(total_minutes)
         per_min = calc_fee_per_minute(total_minutes)
 
-        results.append(f"{plate}\t{hourly} Ft\t{per_min} Ft")
+        results.append(f"{hourly} Ft\t{per_min} Ft")
 
     output = "\n".join(results)
     print(output)
