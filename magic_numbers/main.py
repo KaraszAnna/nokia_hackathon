@@ -1,17 +1,15 @@
 from pathlib import Path
 
-def next_magic_num(self, num: str) -> str:
-        n = len(num)
+def next_magic_num(num_str: str) -> str:
+        n = len(num_str)
         
-        if all(c == '9' for c in num):
-            return str(int(num) + 2)
+        if num_str == '9' * n:
+            return '1' + '0' * (n - 1) + '1'
 
         half_len = (n + 1) // 2
-        left_str = num[:half_len]
+        left_str = num_str[:half_len]
         
-        possible = []
-                
-        for diff in [0, 1]:
+        for diff in (0, 1):
             new_left = str(int(left_str) + diff)
             
             if n % 2 == 0:
@@ -19,10 +17,12 @@ def next_magic_num(self, num: str) -> str:
             else:
                 poss = new_left + new_left[:-1][::-1]
             
-            possible.append(poss)
-            
-        valid = [p for p in possible if int(p) > int(num)]
-        return min(valid, key=int)
+            if len(poss) == n and poss > num_str:
+                return poss
+            if len(poss) > n:
+                return poss
+        
+        return '1' + '0' * (n - 1) + '1'
 
 
 def main():
@@ -35,7 +35,7 @@ def main():
         else:
             n = int(line)
             
-        print(next_magic_num(None, str(n)))
+        print(next_magic_num(str(n)))
 
 
 if __name__ == "__main__":
