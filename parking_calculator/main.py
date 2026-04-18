@@ -57,7 +57,7 @@ def main():
     data = Path("input.txt").read_text(encoding="utf-8")
     lines = data.strip().splitlines()
 
-    results = ["RENDSZAM\tDIJ\t\tPERCDIJ"]
+    results = ["RENDSZAM\tDIJ"]
     for line in lines[2:]:
         parts = [p.strip() for p in line.split('\t') if p.strip()]
         if len(parts) < 3:
@@ -79,9 +79,8 @@ def main():
             continue
 
         hourly = calc_fee_per_hour(total_minutes)
-        minute = calc_fee_per_minute(total_minutes)
 
-        results.append(f"{plate}\t\t{hourly}\t\t{minute}")
+        results.append(f"{plate}\t\t{hourly}")
 
     output = "\n".join(results)
     print(output)
